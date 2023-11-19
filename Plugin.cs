@@ -4,7 +4,7 @@ using BoplFixedMath;
 namespace ZeroAbilityCooldowns
 {
     //[BepInPlugin(GUID, Name, Version)]
-    [BepInPlugin("Mangochicken.ZeroAbilityCooldowns", "ZeroAbilityCooldowns", "1.1.0")]
+    [BepInPlugin("Mangochicken.ZeroAbilityCooldowns", "ZeroAbilityCooldowns", "1.0.0")]
     [BepInProcess("BoplBattle.exe")]
     public class Plugin : BaseUnityPlugin
     {
