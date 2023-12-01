@@ -1,5 +1,6 @@
 ﻿using BepInEx;
 using BoplFixedMath;
+using System;
 
 namespace ZeroAbilityCooldowns
 {
@@ -13,8 +14,6 @@ namespace ZeroAbilityCooldowns
             On.Ability.GetCooldown += Ability_InstantCooldown;
             On.InstantAbility.GetCooldown += InstantAbility_InstantCooldown;
 
-            //TODO: Work on making this a slider or at least some option in the settings
-
             Logger.LogInfo($"Plugin \"ZeroAbilityCooldowns\" is loaded!");
         }
 
@@ -25,9 +24,7 @@ namespace ZeroAbilityCooldowns
 
         private Fix InstantAbility_InstantCooldown(On.InstantAbility.orig_GetCooldown orig, InstantAbility self)
         {
-            return self.IsRope ? orig.Invoke(self) : Fix.One / (Fix)6;
-            // Smoke is so fast that it absorbs all other input, a little bit of delay is ideal
-            // Unfortunately i don't know how to differentiate between smoke and everything else
+            return (self.name == "Smoke(Clone)") ? (Fix)1 / (Fix)4 : Fix.Zero;
         }
     }
 }
