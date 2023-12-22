@@ -1,30 +1,83 @@
 ﻿using BepInEx;
 using BoplFixedMath;
-using System;
+using HarmonyLib;
+using System.Reflection;
 
 namespace ZeroAbilityCooldowns
 {
-    //[BepInPlugin(GUID, Name, Version)]
-    [BepInPlugin("Mangochicken.ZeroAbilityCooldowns", "ZeroAbilityCooldowns", "1.0.0")]
+    [BepInPlugin(ModID, ModName, Version)]
     [BepInProcess("BoplBattle.exe")]
+    [BepInIncompatibility("com.shadow_dev.BoplPanel")]
     public class Plugin : BaseUnityPlugin
     {
+        const string ModID = "com.Mangochicken.ZeroAbilityCooldowns";
+        public const string ModName = "Zero Ability Cooldowns";
+        public const string Version = "1.2.0";
+
+        public static bool EnableAchievements { get; private set; }
+
         private void Awake()
         {
-            On.Ability.GetCooldown += Ability_InstantCooldown;
-            On.InstantAbility.GetCooldown += InstantAbility_InstantCooldown;
+            EnableAchievements = false;
 
-            Logger.LogInfo($"Plugin \"ZeroAbilityCooldowns\" is loaded!");
+            Harmony harmony = new Harmony(ModID);
+
+            MethodInfo orig;
+            MethodInfo patch;
+
+            orig = AccessTools.Method(typeof(AchievementHandler), nameof(AchievementHandler.TryAwardAchievement));
+            patch = AccessTools.Method(typeof(Patches.NoAchievements), "Prefix");
+            harmony.Patch(orig, new HarmonyMethod(patch));
+
+            orig = AccessTools.Method(typeof(Ability), nameof(Ability.GetCooldown));
+            patch = AccessTools.Method(typeof(Patches.Ability_Zero), "Postfix");
+            harmony.Patch(orig, null, new HarmonyMethod(patch));
+
+            orig = AccessTools.Method(typeof(InstantAbility), nameof(InstantAbility.GetCooldown));
+            patch = AccessTools.Method(typeof(Patches.InstantAbility_Zero), "Postfix");
+            harmony.Patch(orig, null, new HarmonyMethod(patch));
+
+            Logger.LogInfo($"Plugin {ModName} is loaded!");
+        }
+    }
+
+    public class Patches
+    {
+        [HarmonyPatch(typeof(Ability))]
+        [HarmonyPatch("GetCooldown")]
+        public class Ability_Zero
+        {
+            static void Postfix(ref Fix __result)
+            {
+                __result = Fix.Zero;
+            }
         }
 
-        private Fix Ability_InstantCooldown(On.Ability.orig_GetCooldown orig, Ability self)
+        [HarmonyPatch(typeof(InstantAbility))]
+        [HarmonyPatch("GetCooldown")]
+        public class InstantAbility_Zero
         {
-            return Fix.Zero;
+            static void Postfix(InstantAbility __instance, ref Fix __result)
+            {
+                if (__instance.name == "Smoke(Clone)")
+                {
+                    __result = Fix.One / (Fix)4;
+                    return;
+                }
+
+                __result = Fix.Zero;
+            }
+
         }
 
-        private Fix InstantAbility_InstantCooldown(On.InstantAbility.orig_GetCooldown orig, InstantAbility self)
+        [HarmonyPatch(typeof(AchievementHandler), nameof(AchievementHandler.TryAwardAchievement))]
+        public class NoAchievements
         {
-            return (self.name == "Smoke(Clone)") ? (Fix)1 / (Fix)4 : Fix.Zero;
+            static bool Prefix()
+            {
+                return Plugin.EnableAchievements;
+            }
+
         }
     }
 }

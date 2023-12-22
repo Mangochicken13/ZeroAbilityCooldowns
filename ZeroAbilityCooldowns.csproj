@@ -26,8 +26,5 @@
     <Reference Include="Assembly-CSharp">
       <HintPath>..\..\..\BoplBattle_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
-    <Reference Include="MonoMod_Bopl_Hooks">
-      <HintPath>..\..\..\BoplBattle_Data\Managed\MMHOOK_Assembly-CSharp.dll</HintPath>
-    </Reference>
   </ItemGroup>
 </Project>
