@@ -23,8 +23,9 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\..\BoplBattle_Data\Managed\Assembly-CSharp.dll</HintPath>
+	<PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.2" PrivateAssets="all" />
+    <Reference Include="Assembly-CSharp" Publicize="True">
+      <HintPath>..\Assemblies\Assembly-CSharp.dll</HintPath>
     </Reference>
   </ItemGroup>
 </Project>

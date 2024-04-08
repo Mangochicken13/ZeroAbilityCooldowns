@@ -12,7 +12,7 @@ namespace ZeroAbilityCooldowns
     {
         const string ModID = "com.Mangochicken.ZeroAbilityCooldowns";
         public const string ModName = "Zero Ability Cooldowns";
-        public const string Version = "1.2.0";
+        public const string Version = "1.3.1";
 
         public static bool EnableAchievements { get; private set; }
 
@@ -20,64 +20,34 @@ namespace ZeroAbilityCooldowns
         {
             EnableAchievements = false;
 
-            Harmony harmony = new Harmony(ModID);
-
-            MethodInfo orig;
-            MethodInfo patch;
-
-            orig = AccessTools.Method(typeof(AchievementHandler), nameof(AchievementHandler.TryAwardAchievement));
-            patch = AccessTools.Method(typeof(Patches.NoAchievements), "Prefix");
-            harmony.Patch(orig, new HarmonyMethod(patch));
-
-            orig = AccessTools.Method(typeof(Ability), nameof(Ability.GetCooldown));
-            patch = AccessTools.Method(typeof(Patches.Ability_Zero), "Postfix");
-            harmony.Patch(orig, null, new HarmonyMethod(patch));
-
-            orig = AccessTools.Method(typeof(InstantAbility), nameof(InstantAbility.GetCooldown));
-            patch = AccessTools.Method(typeof(Patches.InstantAbility_Zero), "Postfix");
-            harmony.Patch(orig, null, new HarmonyMethod(patch));
+            Harmony harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), ModID);
 
             Logger.LogInfo($"Plugin {ModName} is loaded!");
         }
     }
 
+    [HarmonyPatch]
     public class Patches
     {
-        [HarmonyPatch(typeof(Ability))]
-        [HarmonyPatch("GetCooldown")]
-        public class Ability_Zero
+        [HarmonyPatch(typeof(Ability), nameof(Ability.GetCooldown))]
+        [HarmonyPostfix]
+        static void AbilityPostfix(ref Fix __result)
         {
-            static void Postfix(ref Fix __result)
-            {
-                __result = Fix.Zero;
-            }
+            __result = Fix.Zero;
         }
 
-        [HarmonyPatch(typeof(InstantAbility))]
-        [HarmonyPatch("GetCooldown")]
-        public class InstantAbility_Zero
+        [HarmonyPatch(typeof(InstantAbility), nameof(InstantAbility.GetCooldown))]
+        [HarmonyPostfix]
+        static void InstantAbilityPostfix(ref Fix __result)
         {
-            static void Postfix(InstantAbility __instance, ref Fix __result)
-            {
-                if (__instance.name == "Smoke(Clone)")
-                {
-                    __result = Fix.One / (Fix)4;
-                    return;
-                }
-
-                __result = Fix.Zero;
-            }
-
+            __result = Fix.Zero;
         }
 
         [HarmonyPatch(typeof(AchievementHandler), nameof(AchievementHandler.TryAwardAchievement))]
-        public class NoAchievements
+        [HarmonyPrefix]
+        static bool AchievementPrefix()
         {
-            static bool Prefix()
-            {
-                return Plugin.EnableAchievements;
-            }
-
+            return Plugin.EnableAchievements;
         }
     }
 }
