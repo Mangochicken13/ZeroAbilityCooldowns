@@ -8,7 +8,7 @@ namespace ZeroAbilityCooldowns
     [BepInPlugin(ModID, ModName, Version)]
     [BepInProcess("BoplBattle.exe")]
     [BepInIncompatibility("com.shadow_dev.BoplPanel")]
-    public class Plugin : BaseUnityPlugin
+    public class ZeroAbilityCooldowns : BaseUnityPlugin
     {
         const string ModID = "com.Mangochicken.ZeroAbilityCooldowns";
         public const string ModName = "Zero Ability Cooldowns";
@@ -47,7 +47,7 @@ namespace ZeroAbilityCooldowns
         [HarmonyPrefix]
         static bool AchievementPrefix()
         {
-            return Plugin.EnableAchievements;
+            return ZeroAbilityCooldowns.EnableAchievements;
         }
     }
 }
